@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private Tailor-Made Workshop</title>
+<!--
+  ============================================================
+  MOCK-UP: rightshift.to/organization — Private Tailor-Made Workshop & Training
+  Direction: "Quiet luxury" — ใช้ CI เดิม แต่ใช้ให้น้อยลงและเงียบลง
+  ============================================================
+  สำหรับทีมพัฒนาเว็บ:
+  - เว็บจริงใช้ Next.js + MUI (Material UI v6/v7, Emotion)
+  - class ในไฟล์นี้ตั้งชื่อตาม MUI component ที่ควรใช้ (MuiContainer / MuiGrid / MuiTypography / MuiButton / MuiDivider)
+  - Header / Footer = ของเดิม ไม่ต้องแก้
+  - หน้านี้ใช้ "page-level theme override" — แนะนำห่อเนื้อหาด้วย <ThemeProvider theme={privateTheme}>
+    ที่ extend จาก theme หลัก (createTheme(baseTheme, {...})) แล้ว override แค่ค่าในหัวข้อ "Private page tokens" ด้านล่าง
+  - กดปุ่ม "Dev notes" มุมขวาล่างเพื่อดูว่าแต่ละส่วน map กับ component ไหน
+
+  CI ที่คงไว้ (จากเว็บจริง):
+    primary.main #F7931A · text.primary #0F172A · text.secondary #64748B · font Inter · โลโก้ / header / footer
+
+  Private page tokens (override เฉพาะหน้านี้):
+    ink          #0F172A  (= text.primary เดิม ใช้เป็นพื้นหลัง section มืด)
+    ivory        #FAF8F5  (พื้นหลังอบอุ่นแทน #F8FAFC)
+    hairline     rgba(15,23,42,.10)  /  บนพื้นมืด rgba(255,255,255,.14)
+    Font         ใช้ฟอนต์เดียวกับทุกหน้า: Inter, "Inter Fallback" (ภาษาไทยใช้ฟอนต์ระบบเหมือนหน้าอื่น) — ไม่ต้องโหลดฟอนต์เพิ่ม
+    Display type weight 800, letter-spacing -0.02em (= h1/h2 เดิมของเว็บ)
+    Body         weight 400 (Thai body ห้ามต่ำกว่า 400)
+    Label        12px / 700 / uppercase / letter-spacing .16em (เฉพาะข้อความอังกฤษ)
+    Orange       ใช้เป็น accent เท่านั้น: เส้นบาง, ตัวเลขลำดับ, คำเน้น 1 คำ, ปุ่มหลัก 1 จุดต่อ section
+    Radius       รูป 6px · ปุ่ม 8px (เดิม)
+    Section pad  120px (desktop) / 72px (mobile)
+
+  Images: ./photo/*.jpg  (เปลี่ยน path เป็น /images/organization/... ตอนขึ้นเว็บ)
+          ./images/organization/family-office.png, merchant.png = ไฟล์เดิมบนเว็บจริง (ใช้ path เดิมได้เลย)
+          ./images/organization/company.png = ไฟล์ใหม่ (ต้นฉบับ vector: company.svg) — ต้องอัปโหลดขึ้นเว็บเพิ่ม
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- เว็บจริงโหลด Inter ผ่าน next/font อยู่แล้ว — ใน mock-up ใช้ Google Fonts แทน (ไม่มีฟอนต์ไทยเพิ่ม เหมือนหน้าอื่น) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>@font-face{font-family:"Inter Fallback";src:local("Arial");ascent-override:90.49%;descent-override:22.56%;line-gap-override:0%;size-adjust:107.06%}</style>
+<style>
+  :root{
+    --primary:#F7931A;
+    --primary-dark:#E07F0A;
+    --text:#0F172A;
+    --text-2:#64748B;
+    --divider:rgba(0,0,0,.12);
+    --bg:#FFFFFF;
+    --bg-alt:#F8FAFC;
+    --radius-btn:8px;
+
+    /* private page tokens */
+    --ink:#0F172A;
+    --ink-2:#162036;
+    --ivory:#FAF8F5;
+    --hair:rgba(15,23,42,.10);
+    --hair-dark:rgba(255,255,255,.14);
+    --on-ink:#F8FAFC;
+    --on-ink-2:#94A3B8;
+    --radius-img:6px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:Inter,"Inter Fallback";font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- MUI primitives (จำลอง theme เดิม) ---------- */
+  .MuiContainer-maxWidthLg{max-width:1200px;margin:0 auto;padding:0 24px}
+  .MuiContainer-maxWidthXl{max-width:1536px;margin:0 auto;padding:0 24px}
+  @media (max-width:599px){.MuiContainer-maxWidthLg,.MuiContainer-maxWidthXl{padding:0 20px}}
+  .MuiGrid-container{display:flex;flex-wrap:wrap;gap:32px}
+  .MuiGrid-container > *{min-width:0}
+
+  .MuiButton-root{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    font:inherit;font-size:14px;font-weight:500;line-height:1.75;border-radius:var(--radius-btn);
+    padding:6px 16px;cursor:pointer;border:0;transition:background-color .3s,color .3s,border-color .3s}
+  .MuiButton-sizeLarge{font-size:15px;padding:14px 28px;letter-spacing:.01em}
+  .MuiButton-contained{background:var(--primary);color:#fff}
+  .MuiButton-contained:hover{background:var(--primary-dark)}
+  .MuiButton-text{background:transparent;color:var(--text);padding:6px 8px}
+  .MuiButton-text:hover{background:rgba(247,147,26,.08)}
+  .MuiButton-text svg{width:20px;height:20px;fill:var(--text-2)}
+  .MuiSvgIcon-root{width:20px;height:20px;fill:currentColor;flex:none}
+  .arrow{display:inline-block;transition:transform .3s}
+  .MuiButton-root:hover .arrow,.link-quiet:hover .arrow{transform:translateX(4px)}
+
+  /* ---------- Header (ของเดิม) ---------- */
+  .MuiAppBar-root{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--divider)}
+  .MuiToolbar-root{display:flex;align-items:center;gap:16px;min-height:72px}
+  .logo{height:40px;width:auto}
+  .nav{display:flex;align-items:center;gap:4px;margin-left:24px;flex:1}
+  .nav-cta{margin-left:auto;font-weight:700}
+  .menu-btn{display:none;margin-left:auto;background:none;border:0;padding:8px;cursor:pointer}
+  .menu-btn svg{width:24px;height:24px;fill:var(--text)}
+  @media (max-width:1023px){.nav,.nav-cta{display:none}.menu-btn{display:block}}
+
+  /* ---------- Private page type ---------- */
+  .label{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;line-height:1.6;margin:0}
+  .display{font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0}
+  .accent{color:var(--primary)}
+  .rule{display:block;width:48px;height:1px;background:var(--primary);border:0;margin:0}
+  .nowrap{white-space:nowrap}
+
+  .btn-ink{background:var(--ink);color:#fff}
+  .btn-ink:hover{background:var(--primary);color:#fff}
+  .link-quiet{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:500;
+    padding-bottom:4px;border-bottom:1px solid currentColor;transition:color .3s}
+  .link-quiet:hover{color:var(--primary)}
+
+  /* ---------- 1) Hero (dark, editorial) ---------- */
+  .hero{position:relative;background:var(--ink);color:var(--on-ink);overflow:hidden}
+  .hero-inner{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;
+    padding-top:56px;padding-bottom:0}
+  .hero-copy{max-width:560px}
+  .hero h1{font-size:60px;line-height:1.08}
+  .hero h1 .l2{display:block}
+  .hero .kicker{margin:14px 0 0;color:var(--on-ink-2)}
+  .hero .rule{margin:20px 0 18px}
+  .hero .lead{font-size:20px;font-weight:500;line-height:1.55;margin:0 0 6px;color:var(--on-ink)}
+  .hero .intro{font-size:16px;font-weight:400;line-height:1.7;margin:0 0 24px;color:#CBD5E1}
+  .hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:24px}
+  .hero .link-quiet{color:var(--on-ink)}
+  .hero .link-quiet:hover{color:var(--primary)}
+
+  .hero-media{position:absolute;z-index:1;top:0;right:0;bottom:0;width:48%}
+  .hero-media img{width:100%;height:100%;object-fit:cover;object-position:35% 60%;
+    filter:saturate(.8) contrast(1.05) brightness(.92)}
+  .hero-media::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,var(--ink) 0%,rgba(15,23,42,.55) 22%,rgba(15,23,42,0) 55%),
+               linear-gradient(0deg,rgba(15,23,42,.85) 0%,rgba(15,23,42,0) 35%)}
+
+  /* index ของ 3 แพ็กเกจ (แทน chips) */
+  .hero-index{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);
+    margin-top:48px;border-top:1px solid var(--hair-dark)}
+  .hero-index a{display:block;padding:18px 24px 22px 0;border-right:1px solid var(--hair-dark);transition:color .3s}
+  .hero-index a + a{padding-left:24px}
+  .hero-index a:last-child{border-right:0}
+  .hero-index .num{color:var(--primary);font-size:12px;letter-spacing:.24em}
+  .hero-index .name{display:block;font-size:18px;font-weight:700;margin:6px 0 2px;color:var(--on-ink)}
+  .hero-index .th{display:block;font-size:15px;font-weight:400;color:#CBD5E1}
+  .hero-index a:hover .name{color:var(--primary)}
+
+  @media (max-width:1100px){.hero h1{font-size:56px}}
+  @media (max-width:899px){
+    .hero-inner{padding-top:0}
+    .hero-media{position:relative;width:100%;height:280px}
+    .hero-media::after{background:linear-gradient(0deg,var(--ink) 0%,var(--ink) 6%,rgba(15,23,42,.6) 30%,rgba(15,23,42,0) 70%)}
+    .hero-copy{max-width:none;margin-top:-48px}
+    .hero h1{font-size:48px}
+    .hero-index{grid-template-columns:1fr;margin-top:32px}
+    .hero-index a,.hero-index a + a{padding:14px 0;border-right:0;border-bottom:1px solid var(--hair-dark)}
+    .hero-index a:last-child{border-bottom:0}
+  }
+  @media (max-width:599px){
+    .hero h1{font-size:40px}
+    .hero .lead{font-size:18px}
+    .hero-media{height:220px}
+  }
+
+  /* ---------- 2) Packages (editorial rows) ---------- */
+  .packages{background:var(--ivory);padding:64px 0 0}
+  .packages-head{display:grid;grid-template-columns:7fr 5fr;gap:32px;align-items:end;margin-bottom:32px}
+  .packages-head h2{font-size:48px}
+  .packages-head p{font-size:17px;font-weight:500;line-height:1.7;color:var(--text-2);margin:0}
+
+  /* shared */
+  .pkg{scroll-margin-top:96px}
+  .pkg-media{position:relative;overflow:hidden;border-radius:var(--radius-img);background:#E9E5DF}
+  .pkg-media img{width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.04);
+    transition:transform 1.2s cubic-bezier(.2,.6,.2,1)}
+  .pkg:hover .pkg-media img{transform:scale(1.03)}
+  /* ภาพไอคอนจากหน้า /organization เดิม (images/organization/*.png) — สีตามต้นฉบับ ไม่ใส่ filter */
+  .pkg-media.is-icon{background:#FEF5EA}
+  .pkg-media.is-icon img{filter:none}
+  .pkg-row .pkg-media.is-icon{aspect-ratio:4/3}
+  .pkg-num{display:flex;align-items:center;gap:16px;color:var(--primary)}
+  .pkg-num .rule{width:32px}
+  .pkg-title{margin:0}
+  .pkg-sub{font-weight:500;margin:6px 0 0}
+  .pkg-desc{font-size:16px;font-weight:400;line-height:1.8;color:var(--text-2)}
+  .pkg-list{list-style:none;padding:0;border-top:1px solid var(--hair)}
+  .pkg-list li{position:relative;padding:10px 0 10px 28px;border-bottom:1px solid var(--hair);
+    font-size:15px;font-weight:400;line-height:1.6}
+  .pkg-list li::before{content:"";position:absolute;left:0;top:22px;width:14px;height:1px;background:var(--primary)}
+  .pkg-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px}
+  .pkg-price{display:flex;flex-direction:column;gap:2px}
+  .pkg-price p{margin:0}
+  .pkg-price .label{color:var(--text-2);font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;line-height:1.4}
+  .pkg-price .value{font-weight:800;letter-spacing:-.01em;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pkg-price .value small{font-size:16px;font-weight:400;color:var(--text-2);margin-left:6px;letter-spacing:0}
+
+  /* 01 + 02 — แถวนิตยสาร สลับซ้าย-ขวา (โทนเงียบ) */
+  .pkg-row{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:center;
+    padding:48px 0;border-top:1px solid var(--hair)}
+  .pkg-row.reverse{grid-template-columns:7fr 5fr}
+  .pkg-row.reverse .pkg-media{order:2}
+  .pkg-row .pkg-media{aspect-ratio:1/1}
+  .pkg-row .pkg-num{margin-bottom:14px}
+  .pkg-row .pkg-title{font-size:34px}
+  .pkg-row .pkg-sub{font-size:19px;color:var(--text)}
+  .pkg-row .pkg-desc{margin:12px 0 20px;max-width:560px}
+  .pkg-row .pkg-list{margin:0 0 24px}
+  .pkg-row .pkg-price .value{font-size:32px}
+  .btn-outline-ink{background:transparent;color:var(--ink);border:1px solid rgba(15,23,42,.35)}
+  .btn-outline-ink:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* 03 — Bitcoin Company (feature) */
+  .pkg-feature{display:grid;grid-template-columns:6fr 6fr;background:var(--ink);color:var(--on-ink);
+    border-radius:12px;overflow:hidden;margin:16px 0 64px;box-shadow:0 40px 80px -40px rgba(15,23,42,.55)}
+  .pkg-feature .pkg-media{border-radius:0;min-height:100%;background:#1E293B}
+  .pkg-feature .pkg-media::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(15,23,42,0) 55%,var(--ink) 100%)}
+  .pkg-feature .pkg-media.is-icon{background:#FEF5EA}
+  .pkg-feature .pkg-media.is-icon::after{display:none}
+  .pkg-feature .pkg-body{position:relative;padding:36px 40px 36px}
+  .pkg-feature .pkg-body::before{content:"";position:absolute;top:0;left:40px;width:64px;height:3px;background:var(--primary)}
+  .pkg-feature .pkg-num{margin-bottom:10px}
+  .pkg-feature .pkg-title{font-size:40px;line-height:1.1;color:#fff}
+  .pkg-feature .pkg-sub{font-size:19px;margin-top:4px;color:var(--primary)}
+  .pkg-feature .pkg-desc{color:#CBD5E1;margin:10px 0 16px;font-size:15px;line-height:1.7}
+  .pkg-feature .pkg-list{border-top-color:var(--hair-dark);margin:0 0 20px}
+  .pkg-feature .pkg-list li{border-bottom-color:var(--hair-dark);color:var(--on-ink);font-size:15px;padding-block:8px}
+  .pkg-feature .pkg-list li::before{top:20px}
+  .pkg-feature .pkg-foot{gap:16px}
+  .pkg-feature .pkg-price .label{color:var(--on-ink-2)}
+  .pkg-feature .pkg-price .value{font-size:38px;color:var(--primary)}
+  .pkg-feature .pkg-price .value small{color:var(--on-ink-2)}
+
+  @media (max-width:899px){
+    .packages{padding:48px 0 0}
+    .packages-head{grid-template-columns:1fr;gap:8px;margin-bottom:16px}
+    .packages-head h2{font-size:36px}
+    .pkg-row,.pkg-row.reverse{grid-template-columns:1fr;gap:20px;padding:32px 0}
+    .pkg-row.reverse .pkg-media{order:0}
+    .pkg-row .pkg-media{aspect-ratio:16/9}
+    .pkg-row .pkg-title{font-size:28px}
+    .pkg-feature{grid-template-columns:1fr;margin:8px 0 48px}
+    .pkg-feature .pkg-media{aspect-ratio:16/9;min-height:0}
+    .pkg-feature .pkg-media.is-icon{aspect-ratio:4/3}
+    .pkg-feature .pkg-media::after{background:linear-gradient(0deg,var(--ink) 0%,rgba(15,23,42,0) 45%)}
+    .pkg-feature .pkg-body{padding:28px 20px 32px}
+    .pkg-feature .pkg-body::before{left:20px}
+    .pkg-feature .pkg-title{font-size:34px}
+    .pkg-feature .pkg-price .value{font-size:34px}
+  }
+  @media (max-width:599px){
+    .pkg-foot .MuiButton-root{width:100%}
+  }
+
+  /* ---------- 3) Tailor-made (dark) ---------- */
+  .bespoke{background:var(--ink);color:var(--on-ink);padding:80px 0;text-align:center;position:relative;overflow:hidden}
+  .bespoke::before{content:"";position:absolute;left:50%;top:0;width:1px;height:48px;background:var(--primary)}
+  .bespoke-inner{max-width:760px;margin:0 auto}
+  .bespoke .label{color:var(--primary)}
+  .bespoke h2{font-size:44px;margin:12px 0 16px}
+  .bespoke p{font-size:17px;font-weight:400;line-height:1.75;color:#CBD5E1;margin:0 auto 32px;max-width:620px}
+  .bespoke-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:24px}
+  .bespoke .link-quiet{color:var(--on-ink)}
+  .bespoke .link-quiet:hover{color:var(--primary)}
+  @media (max-width:899px){.bespoke{padding:56px 0}.bespoke h2{font-size:34px}}
+  @media (max-width:599px){.bespoke h2{font-size:32px}.bespoke p{font-size:16px}}
+
+  /* ---------- Footer (ของเดิม) ---------- */
+  .footer{background:var(--bg-alt);padding:56px 0 24px;border-top:1px solid var(--divider)}
+  .footer h6{font-size:14px;font-weight:700;margin:0 0 12px}
+  .footer ul{list-style:none;margin:0;padding:0}
+  .footer li{margin-bottom:10px}
+  .footer a:hover{color:var(--primary)}
+  .footer .grid-md-3{flex:1 1 280px}
+  .footer .grid-md-2{flex:1 1 140px}
+  .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid var(--divider);text-align:center}
+  .MuiTypography-body2{font-size:14px;line-height:1.43;margin:0}
+  .text-secondary{color:var(--text-2)}
+  .socials{display:flex;gap:4px;margin-top:12px}
+  .socials a{display:inline-flex;padding:6px;border-radius:50%}
+  .socials svg{width:20px;height:20px;fill:var(--text-2)}
+  .mail{color:var(--primary);text-decoration:underline;text-decoration-color:rgba(247,147,26,.4)}
+
+  /* ---------- Dev notes overlay ---------- */
+  [data-dev]{position:relative}
+  .hero-media[data-dev]{position:absolute}
+  @media (max-width:899px){.hero-media[data-dev]{position:relative}}
+  body.show-dev [data-dev]{outline:1.5px dashed #6366F1;outline-offset:-2px}
+  body.show-dev [data-dev]::before{content:attr(data-dev);position:absolute;z-index:20;top:8px;left:8px;
+    background:#6366F1;color:#fff;font:600 11px/1.4 Inter,"Inter Fallback";letter-spacing:0;text-transform:none;
+    padding:3px 8px;border-radius:4px;white-space:normal;max-width:min(520px,90%);pointer-events:none;text-align:left}
+  .dev-toggle{position:fixed;right:16px;bottom:16px;z-index:50;background:#0F172A;color:#fff;border:1px solid rgba(255,255,255,.2);
+    border-radius:999px;padding:10px 16px;font:700 13px Inter,sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  body.show-dev .dev-toggle{background:#6366F1}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER (ของเดิม: MuiAppBar position=sticky) ============ -->
+<header class="MuiAppBar-root">
+  <div class="MuiContainer-maxWidthXl">
+    <div class="MuiToolbar-root">
+      <a href="/"><img class="logo" src="https://rightshift.to/Rightshift.png" alt="Right Shift Logo"></a>
+      <nav class="nav">
+        <a class="MuiButton-root MuiButton-text" href="/articles"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-5 14H7v-2h7zm3-4H7v-2h10zm0-4H7V7h10z"/></svg>Article</a>
+        <a class="MuiButton-root MuiButton-text" href="/proof-of-work"><svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2m-6 0h-4V4h4z"/></svg>Proof Of Work</a>
+        <a class="MuiButton-root MuiButton-text" href="/team"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3m-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3m0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5m8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5"/></svg>Team</a>
+        <a class="MuiButton-root MuiButton-text" href="#"><svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17zM12 3 1 9l11 6 9-4.91V17h2V9z"/></svg>Courses</a>
+        <a class="MuiButton-root MuiButton-text" href="#"><svg viewBox="0 0 24 24"><path d="M2 6H0v5h.01L0 20c0 1.1.9 2 2 2h18v-2H2zm20-2h-8l-2-2H6c-1.1 0-1.99.9-1.99 2L4 16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2M7 15l4.5-6 3.5 4.51 2.5-3.01L21 15z"/></svg>Media</a>
+        <a class="MuiButton-root MuiButton-text" href="/shop"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2M1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2"/></svg>Shop</a>
+      </nav>
+      <a class="MuiButton-root MuiButton-contained nav-cta" href="#">Get Started</a>
+      <button class="menu-btn" aria-label="open drawer"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3zm0-5h18v-2H3zm0-7v2h18V6z"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 1) HERO ============ -->
+<section class="hero" data-dev="NEW · Hero (dark) — Box bgcolor='text.primary' · รูปชิดขวา 48% (absolute) + gradient overlay · Typography fontWeight 300">
+  <div class="hero-media">
+    <img src="../public/images/organization/private-hero.jpg" alt="ผู้เรียนกำลังตั้งค่าฮาร์ดแวร์วอลเล็ตระหว่างเวิร์กช็อป Right Shift">
+  </div>
+  <div class="MuiContainer-maxWidthLg">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <h1 class="display">Private<span class="l2 accent nowrap">Tailor-Made</span></h1>
+        <p class="label kicker">Workshop &amp; Training</p>
+        <hr class="rule">
+        <h2 class="lead">เรียนทุกเรื่องที่คุณอยากรู้เกี่ยวกับบิตคอยน์ ในรูปแบบที่คุณต้องการ</h2>
+        <p class="intro">รับจัดอบรมและเวิร์กช็อปบิตคอยน์ที่ออกแบบพิเศษตามความต้องการของคุณ</p>
+        <div class="hero-actions">
+          <a class="MuiButton-root MuiButton-contained MuiButton-sizeLarge" href="#packages">ดูแพ็กเกจเวิร์กช็อป <span class="arrow">→</span></a>
+          <a class="link-quiet" href="#tailor-made">ปรึกษาเพื่อออกแบบหลักสูตร <span class="arrow">→</span></a>
+        </div>
+      </div>
+      <nav class="hero-index" aria-label="แพ็กเกจ" data-dev="Grid container 3 คอลัมน์ · เส้นคั่น 1px · anchor ไปยังแต่ละแพ็กเกจ">
+        <a href="#family-office"><span class="label num">01</span><span class="name">Family Office</span><span class="th">ทุนบิตคอยน์สำหรับครอบครัว</span></a>
+        <a href="#bitcoin-accepted-business"><span class="label num">02</span><span class="name">Bitcoin Accepted Merchant</span><span class="th">ธุรกิจที่รับชำระเป็นบิตคอยน์</span></a>
+        <a href="#bitcoin-company"><span class="label num">03</span><span class="name">Bitcoin Company</span><span class="th">คลังบิตคอยน์ระดับองค์กร</span></a>
+      </nav>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2) PACKAGES ============ -->
+<section class="packages" id="packages" data-dev="NEW · Packages — พื้น ivory #FAF8F5 · Container lg · หัว section 2 คอลัมน์ (Grid md=7 / md=5)">
+  <div class="MuiContainer-maxWidthLg">
+    <div class="packages-head">
+      <h2 class="display">Workshop <span class="accent">Package</span></h2>
+      <p>ตัวอย่างแพ็คเกจเวิร์กช็อปสำหรับความต้องการแต่ละรูปแบบ</p>
+    </div>
+
+      <!-- 01 -->
+      <article class="pkg pkg-row" id="family-office" data-dev="Package row — Grid container (md=5 รูป / md=7 เนื้อหา) สลับซ้าย-ขวา · ปุ่ม outlined (ink) เพื่อให้ 03 เด่นกว่า">
+        <div class="pkg-media is-icon">
+          <img src="../public/images/organization/family-office.png" alt="Family Office">
+        </div>
+        <div class="pkg-body">
+        <div class="pkg-num label"><span>01</span><hr class="rule"></div>
+        <h3 class="display pkg-title">Family Office</h3>
+        <p class="pkg-sub">ทุนบิตคอยน์สำหรับครอบครัว</p>
+        <p class="pkg-desc">เวิร์กช็อปเรียนรู้บิตคอยน์สำหรับครอบครัว คู่ครอง หรือหุ้นส่วนที่ต้องการถือครองบิตคอยน์ร่วมกัน</p>
+        <ul class="pkg-list">
+          <li>ปูพื้นฐาน ไขข้อสงสัยเรื่องเงินและบิตคอยน์</li>
+          <li>ออกแบบแนวทางการเก็บรักษาบิตคอยน์ที่สอดคล้องกับความต้องการของแต่ละครอบครัว</li>
+          <li>เวิร์กช็อปจับมือสอนใช้งานวอลเล็ตบิตคอยน์อย่างปลอดภัย ไม่ว่าจะเป็นรูปแบบ singlesig หรือ multisig</li>
+          <li>ออกแบบแผนส่งมอบมรดกบิตคอยน์ แนวทางด้านกฎหมาย ภาษี และการกระจายความเสี่ยงด้วยการกระจายการเก็บคีย์เข้าถึงบิตคอยน์ในหลายขอบเขตภูมิรัฐศาสตร์</li>
+        </ul>
+        <div class="pkg-foot">
+          <div class="pkg-price"><p class="label">เริ่มต้นที่</p><p class="value">24,500<small>บาท</small></p></div>
+          <a class="MuiButton-root MuiButton-sizeLarge btn-outline-ink" href="#">สอบถามเพิ่มเติม <span class="arrow">→</span></a>
+        </div>
+        </div>
+      </article>
+
+      <!-- 02 -->
+      <article class="pkg pkg-row reverse" id="bitcoin-accepted-business">
+        <div class="pkg-media is-icon">
+          <img src="../public/images/organization/merchant.png" alt="Bitcoin Accepted Merchant">
+        </div>
+        <div class="pkg-body">
+        <div class="pkg-num label"><span>02</span><hr class="rule"></div>
+        <h3 class="display pkg-title">Bitcoin Accepted Merchant</h3>
+        <p class="pkg-sub">ธุรกิจที่รับชำระเป็นบิตคอยน์</p>
+        <p class="pkg-desc">เวิร์กช็อปเรียนรู้บิตคอยน์สำหรับธุรกิจร้านค้าที่ต้องการรับชำระค่าสินค้าและบริการด้วยบิตคอยน์</p>
+        <ul class="pkg-list">
+          <li>ปูพื้นฐานความรู้ความเข้าใจเบื้องต้นสำหรับพนักงาน</li>
+          <li>แนวทางเชิงกฎหมาย บัญชี และภาษี</li>
+          <li>การเลือกใช้ช่องทางรับชำระด้วยบิตคอยน์ในรูปแบบที่ตอบโจทย์ธุรกิจของคุณ</li>
+          <li>อบรมเชิงปฏิบัติการและคู่มือสำหรับพนักงาน</li>
+        </ul>
+        <div class="pkg-foot">
+          <div class="pkg-price"><p class="label">เริ่มต้นที่</p><p class="value">29,000<small>บาท</small></p></div>
+          <a class="MuiButton-root MuiButton-sizeLarge btn-outline-ink" href="#">สอบถามเพิ่มเติม <span class="arrow">→</span></a>
+        </div>
+        </div>
+      </article>
+
+    <!-- 03 — FEATURE -->
+    <article class="pkg pkg-feature" id="bitcoin-company" data-dev="FEATURE · Bitcoin Company — Box bgcolor='text.primary' radius 12 · Grid md=6 รูป / md=6 เนื้อหา · ราคาสีส้ม + ปุ่ม contained primary (จุดเดียวใน section)">
+      <div class="pkg-media is-icon">
+        <img src="../public/images/organization/company.png" alt="Bitcoin Company — องค์กรเติบโตไปกับบิตคอยน์">
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-num label"><span>03</span><hr class="rule"></div>
+        <h3 class="display pkg-title">Bitcoin Company</h3>
+        <p class="pkg-sub">คลังบิตคอยน์ระดับองค์กร</p>
+        <p class="pkg-desc">เวิร์กช็อปเรียนรู้บิตคอยน์สำหรับธุรกิจที่ต้องการเข้าสู่มาตรฐานบิตคอยน์</p>
+        <ul class="pkg-list">
+          <li>ปูพื้นฐาน ไขข้อสงสัยเรื่องบิตคอยน์สำหรับผู้บริหารและเจ้าของกิจการ</li>
+          <li>แนวทางเชิงกฎหมาย บัญชี และภาษี</li>
+          <li>แนวทางการเก็บรักษาบิตคอยน์สำหรับบริษัท และแนวทางการสะสมบิตคอยน์เข้าคลัง</li>
+          <li>เวิร์กช็อปจับมือสอนใช้งานวอลเล็ตบิตคอยน์อย่างปลอดภัย</li>
+        </ul>
+        <div class="pkg-foot">
+          <div class="pkg-price"><p class="label">เริ่มต้นที่</p><p class="value">155,000<small>บาท</small></p></div>
+          <a class="MuiButton-root MuiButton-contained MuiButton-sizeLarge" href="#">สอบถามเพิ่มเติม <span class="arrow">→</span></a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 3) TAILOR-MADE ============ -->
+<section class="bespoke" id="tailor-made" data-dev="NEW · Tailor-Made (dark) — Box bgcolor='text.primary' · เส้นส้มแนวตั้ง 1px ด้านบน · ปุ่มหลักสีส้ม 1 จุด">
+  <div class="MuiContainer-maxWidthLg">
+    <div class="bespoke-inner">
+      <p class="label">Tailor-Made</p>
+      <h2 class="display">ด้านบนยังไม่ตรงใจ? ลองเล่าให้เราฟัง</h2>
+      <p>ถ้าคุณอยากเรียนรู้เรื่องบิตคอยน์ในแบบที่ไม่เหมือนใคร เรายินดีให้คำปรึกษาเบื้องต้นและส่งมอบประสบการณ์การเรียนรู้บิตคอยน์ที่ออกแบบมาเพื่อคุณโดยเฉพาะ</p>
+      <div class="bespoke-actions">
+        <a class="MuiButton-root MuiButton-contained MuiButton-sizeLarge" href="#">ติดต่อเรา <span class="arrow">→</span></a>
+        <a class="link-quiet" href="mailto:admin@rightshift.to">admin@rightshift.to</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER (ของเดิม) ============ -->
+<footer class="footer">
+  <div class="MuiContainer-maxWidthLg">
+    <div class="MuiGrid-container">
+      <div class="grid-md-3">
+        <img class="logo" src="https://rightshift.to/Rightshift.png" alt="Right Shift Logo">
+        <p class="MuiTypography-body2 text-secondary" style="margin-top:12px">RightShift is your signal in the noise. Dedicated to helping individuals and families adopt Bitcoin, the hardest money ever created.</p>
+        <div class="socials">
+          <a href="https://www.youtube.com/@rightshift" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73"/></svg></a>
+          <a href="https://www.facebook.com/RightShift.to" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m13 2h-2.5A3.5 3.5 0 0 0 12 8.5V11h-2v3h2v7h3v-7h3v-3h-3V9a1 1 0 0 1 1-1h2V5z"/></svg></a>
+          <a href="https://rs0-5.gitbook.io/righttech" aria-label="RightTech"><svg viewBox="0 0 24 24"><path d="M9.4 16.6 4.8 12l4.6-4.6L8 6l-6 6 6 6zm5.2 0 4.6-4.6-4.6-4.6L16 6l6 6-6 6z"/></svg></a>
+        </div>
+      </div>
+      <div class="grid-md-2">
+        <h6>Services</h6>
+        <ul class="MuiTypography-body2">
+          <li><a href="/articles">Article</a></li>
+          <li><a href="/proof-of-work">Proof of Work</a></li>
+          <li><a href="/shop">Shop</a></li>
+          <li><a href="/course-shop">Course Shop</a></li>
+          <li><a href="#">Private Meeting</a></li>
+        </ul>
+      </div>
+      <div class="grid-md-2">
+        <h6>Media</h6>
+        <ul class="MuiTypography-body2">
+          <li><a href="https://www.youtube.com/@rightshift">YouTube</a></li>
+          <li><a href="https://www.facebook.com/RightShift.to">Facebook</a></li>
+          <li><a href="https://rs0-5.gitbook.io/righttech">RightTech</a></li>
+        </ul>
+      </div>
+      <div class="grid-md-2">
+        <h6>Contact Us</h6>
+        <p class="MuiTypography-body2 text-secondary" style="margin-bottom:8px">Have questions? Reach out to us.</p>
+        <a class="MuiTypography-body2 mail" href="mailto:admin@rightshift.to">admin@rightshift.to</a>
+        <p class="MuiTypography-body2" style="margin-top:8px"><a href="#">Send Message →</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="MuiTypography-body2 text-secondary">© 2026 RightShift. Bitcoin is for everyone.</p>
+    </div>
+  </div>
+</footer>
+
+<button class="dev-toggle" type="button" onclick="document.body.classList.toggle('show-dev')">Dev notes</button>
+</body>
+</html>
